@@ -6,7 +6,7 @@ class SyncFileDispatcher(TDispatcher):
     def __init__(self, path: Path) -> None:
         self._fp = path
         self.writer = open(self._fp, "w")
-        assert self.writer.writable(), "Output file not writable!"
+        assert self.writer.writable(), f"Output file {self._fp} not writable!"
         self.writer.__enter__()
         self.writer.write("[\n")
         self.initial_value_wrtten = False

@@ -15,6 +15,7 @@ def track(name: str, cat: str, args: Optional[Mapping] = None):
         "pid": getpid(),
         "tid": get_ident(),
     }
-    d._dispatcher(Event(**common_args, args=args, ph=Phase.B, ts=perf_counter_ns()))
+    # divide to deliver microseconds in the event
+    d._dispatcher(Event(**common_args, args=args, ph=Phase.B, ts=perf_counter_ns() // 1000))
     yield
-    d._dispatcher(Event(**common_args, args=None, ph=Phase.E, ts=perf_counter_ns()))
+    d._dispatcher(Event(**common_args, args=None, ph=Phase.E, ts=perf_counter_ns() // 1000))
