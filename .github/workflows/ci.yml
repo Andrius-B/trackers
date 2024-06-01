@@ -23,4 +23,4 @@ jobs:
     - name: Install dependencies
       run: poetry install --no-interaction --no-root
     - name: Run the CI script
-      run: ./scripts/ci.sh
+      run: bash ./scripts/ci.sh
