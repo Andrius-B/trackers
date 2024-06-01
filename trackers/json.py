@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Mapping, Optional, Union
-from json import dumps
+from json import dumps, loads
 
 
 TJSON_VALUE = Optional[Union[str, float, bool]]
@@ -24,4 +24,17 @@ class Event:
         name_str = "" if self.name is None else f'"name":"{self.name}",'
         cat_str = "" if self.cat is None else f'"cat":"{self.cat}",'
         args_str = "" if self.cat is None else f',"args":{dumps(self.args)}'
-        return f'{{{name_str}{cat_str}"ph":"{self.ph.name}","ts":{self.ts},"ts":{self.ts},"pid":{self.pid},"tid":{self.tid}{args_str}}}'
+        return f'{{{name_str}{cat_str}"ph":"{self.ph.name}","ts":{self.ts},"pid":{self.pid},"tid":{self.tid}{args_str}}}'
+
+    @classmethod
+    def from_json(cls, payload: str) -> "Event":
+        content: Mapping[str, TJSON_VALUE] = loads(payload)
+        return Event(
+            content["name"],
+            content["cat"],
+            content["pid"],
+            content["tid"],
+            Phase[content["ph"]],
+            content["ts"],
+            content.get("args"),
+        )

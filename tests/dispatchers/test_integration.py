@@ -1,7 +1,10 @@
 from pathlib import Path
 import pytest
 from trackers.dispatcher import configure_dispatcher
+from trackers.redispatcher import configure_redispatcher
 from trackers.dispatchers.sync_file_dispatcher import SyncFileDispatcher
+from trackers.dispatchers.tcp_dispatcher import TCPDispatcher
+from trackers.redispatchers.tcp_redispatcher import TCPRedispatcher
 from trackers.trackers import tracked
 
 
@@ -11,16 +14,17 @@ def run_around_tests():
     yield
 
 
-def test_fibonacci_produce():
+def test_fibonacci_sync_file():
     f = Path("test_data/fibonacci.json")
     with configure_dispatcher(SyncFileDispatcher(f)):
         assert 610 == fibonacci(15)
 
 
-# def test_fibonacci_tcp():
-#     f = Path("test_data/fibonacci.json")
-#     with configure_dispatcher(SyncFileDispatcher(f)):
-#         assert 610 == fibonacci(15)
+def test_fibonacci_tcp():
+    f = Path("test_data/fibonacci_tcp.json")
+    with configure_redispatcher(TCPRedispatcher(SyncFileDispatcher(f))):
+        with configure_dispatcher(TCPDispatcher()):
+            assert 610 == fibonacci(15)
 
 
 def fibonacci(n: int):

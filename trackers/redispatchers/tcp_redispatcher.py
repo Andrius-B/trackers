@@ -19,7 +19,7 @@ class TCPMetricsSocketHandler(socketserver.BaseRequestHandler):
             self.handle_one_sample(sample_bytes)
 
     def handle_one_sample(self, sample_bytes: bytes):
-        self.handle_event(loads(sample_bytes.decode()))
+        self.handle_event(Event.from_json(sample_bytes.decode()))
 
     def handle_event(self, event: Event):
         if TCPMetricsSocketHandler.base_dispatcher:
@@ -73,7 +73,7 @@ def _tcp_redispatcher_thread(
 
 class TCPRedispatcher(Redispatcher):
     def __init__(
-        self, dispatcher: TDispatcher, port: int = 12153, host: str = "localhost"
+        self, dispatcher: TDispatcher, port: int = 61432, host: str = "localhost"
     ) -> None:
         super().__init__(dispatcher)
         self.redispatcher_thread_context_manager = _tcp_redispatcher_thread(
