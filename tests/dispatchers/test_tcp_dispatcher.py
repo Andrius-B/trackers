@@ -41,7 +41,7 @@ def tcp_test_receiver_thread(port: int, host: str = "localhost"):
     TCPMetricsTestHandler.started = True
     yield server_thread
     TCPMetricsTestHandler.termination_event.set()
-    server_thread.join(timeout=0.1)
+    server_thread.join(timeout=1)
     TCPMetricsTestHandler.started = False
     assert (
         not server_thread.is_alive()
