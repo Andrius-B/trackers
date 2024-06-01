@@ -1,14 +1,7 @@
 import trackers.dispatcher
 from trackers.json import Event
+from tests.test_fixtures import MockDispatcher
 import trackers.trackers as t
-
-
-class MockDispatcher:
-    def __init__(self) -> None:
-        self.calls: list[Event] = []
-
-    def __call__(self, e: Event):
-        self.calls.append(e)
 
 
 def mock_dispatcher(mocker) -> list[Event]:

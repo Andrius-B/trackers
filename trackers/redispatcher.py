@@ -13,6 +13,6 @@ class Redispatcher(AbstractContextManager):
 
 
 @contextmanager
-def configure_receiver(receiver: Redispatcher):
-    with receiver:
+def configure_redispatcher(redispatcher: Redispatcher):
+    with redispatcher:
         yield

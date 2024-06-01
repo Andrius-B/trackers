@@ -1,6 +1,14 @@
 from contextlib import contextmanager
-from tempfile import TemporaryDirectory
+from trackers import Event
 from pathlib import Path
+
+
+class MockDispatcher:
+    def __init__(self) -> None:
+        self.calls: list[Event] = []
+
+    def __call__(self, e: Event):
+        self.calls.append(e)
 
 
 @contextmanager
