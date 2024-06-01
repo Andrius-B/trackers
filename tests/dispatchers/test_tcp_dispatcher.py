@@ -1,16 +1,16 @@
-from json import loads
-import time
-from threading import Thread, Event
+from threading import Thread
 from contextlib import contextmanager
 from trackers.redispatchers.tcp_redispatcher import TCPMetricsSocketHandler
 from trackers.dispatchers.tcp_dispatcher import TCPDispatcher
 from trackers.dispatcher import configure_dispatcher
+from trackers.json import Event
 from trackers.trackers import tracked
 import socketserver
 from multiprocessing import Process
 
 
 class TCPMetricsTestHandler(TCPMetricsSocketHandler):
+    events: list[Event] = []
 
     def handle_event(self, event: Event):
         TCPMetricsTestHandler.events.append(event)

@@ -1,17 +1,18 @@
 from types import TracebackType
-from typing import Any
+from typing import Any, Optional
 import socketserver
-from threading import Event, Thread
+from threading import Event as ThreadEvent, Thread
 from contextlib import contextmanager
 from json import loads
+from trackers.json import Event
 from trackers.dispatcher import TDispatcher
 from trackers.redispatcher import Redispatcher
 
 
 class TCPMetricsSocketHandler(socketserver.BaseRequestHandler):
     started = False
-    base_dispatcher: TDispatcher = None
-    termination_event = Event()
+    base_dispatcher: Optional[TDispatcher] = None
+    termination_event = ThreadEvent()
 
     def handle(self):
         for sample_bytes in self.read_request_lines():
@@ -21,7 +22,8 @@ class TCPMetricsSocketHandler(socketserver.BaseRequestHandler):
         self.handle_event(loads(sample_bytes.decode()))
 
     def handle_event(self, event: Event):
-        TCPMetricsSocketHandler.base_dispatcher(event)
+        if TCPMetricsSocketHandler.base_dispatcher:
+            TCPMetricsSocketHandler.base_dispatcher(event)
 
     def read_request_chunk(self, chunk_size=1024):
         while len(data := self.request.recv(chunk_size)) > 0:
@@ -89,6 +91,6 @@ class TCPRedispatcher(Redispatcher):
         traceback: TracebackType | None,
     ) -> bool | None:
         super().__exit__(exc_type, exc_value, traceback)
-        self.redispatcher_thread_context_manager.__exit__(
+        return self.redispatcher_thread_context_manager.__exit__(
             exc_type, exc_value, traceback
         )

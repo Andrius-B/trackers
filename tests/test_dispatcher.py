@@ -45,7 +45,7 @@ def test_configure_dispatcher_cleanup():
     assert temp_dispatcher.closed == True
 
 
-def test_configure_dispatcher_cleanup():
+def test_manual_configure_dispatcher_cleanup():
     temp_dispatcher = DispatcherWithCleanup()
     set_default_dispatcher(temp_dispatcher)
     with tracked("sample", "c"):
