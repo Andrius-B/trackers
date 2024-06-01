@@ -23,11 +23,11 @@ def _run_test_tcp_server(port: int, host: str):
             server.handle_request()
 
 
-TEST_PORT = 12154
+TEST_PORT_1 = 12154
 
 
 @contextmanager
-def tcp_test_receiver_thread(port: int = TEST_PORT, host: str = "localhost"):
+def tcp_test_receiver_thread(port: int, host: str = "localhost"):
     TCPMetricsTestHandler.events = []
     TCPMetricsTestHandler.termination_event.clear()
     server_thread = Thread(
@@ -48,8 +48,8 @@ def tcp_test_receiver_thread(port: int = TEST_PORT, host: str = "localhost"):
 
 
 def test_tcp_dispatcher_metrics_from_main_thread():
-    with tcp_test_receiver_thread():
-        with configure_dispatcher(TCPDispatcher(TEST_PORT)):
+    with tcp_test_receiver_thread(TEST_PORT_1):
+        with configure_dispatcher(TCPDispatcher(TEST_PORT_1)):
             for i in range(100):
                 with tracked(f"{i}", "c"):
                     pass
@@ -60,22 +60,25 @@ def test_tcp_dispatcher_metrics_from_main_thread():
     assert len(TCPMetricsTestHandler.events) == 400
 
 
+TEST_PORT_2 = TEST_PORT_1 + 1
+
+
 def send_from_process1():
-    with configure_dispatcher(TCPDispatcher(TEST_PORT)):
+    with configure_dispatcher(TCPDispatcher(TEST_PORT_2)):
         for i in range(50):
             with tracked(f"first-{i}", "c"):
                 pass
 
 
 def send_from_process2():
-    with configure_dispatcher(TCPDispatcher(TEST_PORT)):
+    with configure_dispatcher(TCPDispatcher(TEST_PORT_2)):
         for i in range(50):
             with tracked(f"second-{i}", "c"):
                 pass
 
 
 def test_tcp_dispatcher_metrics_from_process():
-    with tcp_test_receiver_thread(port=TEST_PORT):
+    with tcp_test_receiver_thread(port=TEST_PORT_2):
         procs = [Process(target=f) for f in [send_from_process1, send_from_process2]]
         TCPMetricsTestHandler.events = []
         for p in procs:
