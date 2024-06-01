@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
+
 @contextmanager
 def temp_file_closed():
     tmpdir = Path("test_data") / "profiles"

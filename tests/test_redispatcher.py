@@ -1,16 +1,18 @@
 from trackers.redispatcher import configure_receiver
 from contextlib import AbstractContextManager
 
+
 class RedispatcherWithCleanup(AbstractContextManager):
     def __init__(self) -> None:
         self.closed = False
         self.started = False
 
     def __enter__(self):
-         self.started = True
-    
+        self.started = True
+
     def __exit__(self, *args, **kwargs):
-         self.closed = True
+        self.closed = True
+
 
 def test_configure_receiver():
     redispatcher = RedispatcherWithCleanup()
@@ -20,6 +22,6 @@ def test_configure_receiver():
     with configure_receiver(redispatcher):
         assert redispatcher.started == True
         assert redispatcher.closed == False
-    
+
     assert redispatcher.started == True
     assert redispatcher.closed == True

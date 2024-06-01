@@ -2,6 +2,7 @@ from pathlib import Path
 from trackers.json import Event
 from trackers.dispatcher import TDispatcher
 
+
 class SyncFileDispatcher:
     def __init__(self, path: Path) -> None:
         self._fp = path
