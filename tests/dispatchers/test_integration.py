@@ -1,7 +1,14 @@
 from pathlib import Path
+import pytest
 from trackers.dispatcher import configure_dispatcher
 from trackers.dispatchers.sync_file_dispatcher import SyncFileDispatcher
 from trackers.trackers import tracked
+
+
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    Path("test_data").mkdir(parents=True, exist_ok=True)
+    yield
 
 
 def test_fibonacci_produce():
