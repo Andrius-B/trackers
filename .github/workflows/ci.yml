@@ -27,4 +27,4 @@ jobs:
     - name: Check typehints with mypy
       run: poetry run mypy trackers
     - name: Run tests with pytest
-      run: poetry run pytest --cov=trackers
+      run: poetry run pytest
