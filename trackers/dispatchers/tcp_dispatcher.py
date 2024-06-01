@@ -1,8 +1,7 @@
 import socket
 from trackers.json import Event
-from trackers.dispatcher import TDispatcher
 
-class TCPDispatcher(TDispatcher):
+class TCPDispatcher:
     def __init__(self, port: int = 61432) -> None:
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect(("localhost", port))

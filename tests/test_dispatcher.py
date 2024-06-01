@@ -1,6 +1,6 @@
 from typing import Any
 from pytest import raises
-from trackers.dispatcher import configure_dispatcher
+from trackers.dispatcher import configure_dispatcher, set_default_dispatcher, reset_default_dispatcher
 from trackers.trackers import tracked
 from trackers.json import Event
 
@@ -34,5 +34,13 @@ def test_configure_dispatcher_cleanup():
             with tracked("sample", "c"):
                 assert temp_dispatcher.closed == False
                 pass
+        assert temp_dispatcher.closed == True
+
+def test_configure_dispatcher_cleanup():
+        temp_dispatcher = DispatcherWithCleanup()
+        set_default_dispatcher(temp_dispatcher)
+        with tracked("sample", "c"):
+            assert temp_dispatcher.closed == False
+        reset_default_dispatcher()
         assert temp_dispatcher.closed == True
     

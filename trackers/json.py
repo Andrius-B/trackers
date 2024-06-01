@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Union
 from json import dumps
 
-Phase = Enum('Phase', ["B", "E"])
+
+TJSON_VALUE = Optional[Union[str, float, bool]]
+Phase = Enum('Phase', ["B", "E", "C"])
 
 
 @dataclass
@@ -14,7 +16,7 @@ class Event:
     tid: int
     ph: Phase
     ts: int
-    args: Optional[Mapping]
+    args: Optional[Mapping[str, TJSON_VALUE]]
 
     def json(self):
         # based on https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.nso4gcezn7n1

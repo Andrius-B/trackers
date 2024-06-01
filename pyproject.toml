@@ -10,7 +10,13 @@ python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
+pytest-mock = "^3.14.0"
+mypy = "^1.10.0"
+pytest-mypy = "^0.10.3"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--cov=trackers --cov-report html"

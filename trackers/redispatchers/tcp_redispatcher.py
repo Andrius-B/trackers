@@ -5,7 +5,7 @@ from json import loads
 
 class TCPMetricsSocketHandler(socketserver.BaseRequestHandler):
     started = False
-    events = []
+    events: list[Event] = []
     termination_event = Event()
 
     def handle(self):
@@ -42,7 +42,7 @@ def _run_tcp_server(port: int, host: str):
             server.handle_request()
 
 @contextmanager
-def tcp_receiver_thread(port: int = 12153, host: str = "localhost"):
+def tcp_redispatcher_thread(port: int = 12153, host: str = "localhost"):
     TCPMetricsSocketHandler.events = []
     TCPMetricsSocketHandler.termination_event.clear()
     server_thread = Thread(target = _run_tcp_server, args = (port, host), name = "tcp-metric-listener", daemon=True)

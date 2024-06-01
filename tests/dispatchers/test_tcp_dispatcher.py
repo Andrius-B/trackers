@@ -2,7 +2,7 @@ from json import loads
 import time
 from threading import Thread, Event
 from contextlib import contextmanager
-from trackers.receivers.tcp_receiver import TCPMetricsSocketHandler
+from trackers.redispatchers.tcp_redispatcher import TCPMetricsSocketHandler
 from trackers.dispatchers.tcp_dispatcher import TCPDispatcher
 from trackers.dispatcher import configure_dispatcher
 from trackers.trackers import tracked
@@ -27,7 +27,7 @@ TEST_PORT = 12154
 def tcp_test_receiver_thread(port: int = TEST_PORT, host: str = "localhost"):
     TCPMetricsTestHandler.events = []
     TCPMetricsTestHandler.termination_event.clear()
-    server_thread = Thread(target = _run_test_tcp_server, args = (port, host), name = "tcp-metric-listener", daemon=True)
+    server_thread = Thread(target = _run_test_tcp_server, args = (port, host), name = "test-tcp-metric-listener", daemon=True)
     server_thread.start()
     TCPMetricsTestHandler.started = True
     yield server_thread
