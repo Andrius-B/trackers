@@ -12,6 +12,9 @@ class SyncFileDispatcher:
         self.writer.write("[\n")
         self.initial_value_wrtten = False
 
+    def __enter__(self) -> "SyncFileDispatcher":
+        return self
+
     def __call__(self, event: Event):
         serialized = event.json()
         if self.initial_value_wrtten:
@@ -20,9 +23,9 @@ class SyncFileDispatcher:
         self.writer.flush()
         self.initial_value_wrtten = True
 
-    def __exit__(self, **kwargs):
+    def __exit__(self, *args, **kwargs):
         if self.initial_value_wrtten:
             self.writer.write("\n")
         self.writer.write("]\n")
         self.writer.flush()
-        self.writer.__exit__(**kwargs)
+        self.writer.__exit__(*args, **kwargs)

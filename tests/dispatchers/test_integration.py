@@ -21,10 +21,10 @@ def test_fibonacci_sync_file():
 
 
 def test_fibonacci_tcp():
-    f = Path("test_data/fibonacci_tcp.json")
-    with configure_redispatcher(TCPRedispatcher(SyncFileDispatcher(f))):
-        with configure_dispatcher(TCPDispatcher()):
-            assert 610 == fibonacci(15)
+    with SyncFileDispatcher(Path("test_data/fibonacci_tcp.json")) as output_dispatcher:
+        with configure_redispatcher(TCPRedispatcher(output_dispatcher)):
+            with configure_dispatcher(TCPDispatcher()):
+                assert 610 == fibonacci(15)
 
 
 def fibonacci(n: int):

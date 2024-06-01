@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping, Optional, Union
+from typing import Mapping, Optional, Union, cast
 from json import dumps, loads
 
 
@@ -28,13 +28,15 @@ class Event:
 
     @classmethod
     def from_json(cls, payload: str) -> "Event":
-        content: Mapping[str, TJSON_VALUE] = loads(payload)
+        content: Mapping[str, Union[TJSON_VALUE, Mapping[str, TJSON_VALUE]]] = loads(
+            payload
+        )
         return Event(
-            content["name"],
-            content["cat"],
-            content["pid"],
-            content["tid"],
-            Phase[content["ph"]],
-            content["ts"],
-            content.get("args"),
+            name=cast(str | None, content.get("name")),
+            cat=cast(str | None, content.get("cat")),
+            pid=cast(int, content["pid"]),
+            tid=cast(int, content["tid"]),
+            ph=Phase[cast(str, content["ph"])],
+            ts=cast(int, content["ts"]),
+            args=cast(Optional[Mapping[str, TJSON_VALUE]], content.get("args")),
         )
