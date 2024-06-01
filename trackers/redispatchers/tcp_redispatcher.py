@@ -63,7 +63,7 @@ def _tcp_redispatcher_thread(
     TCPMetricsSocketHandler.started = True
     yield server_thread
     TCPMetricsSocketHandler.termination_event.set()
-    server_thread.join(timeout=0.1)
+    server_thread.join(timeout=1)
     TCPMetricsSocketHandler.started = False
     TCPMetricsSocketHandler.base_dispatcher = None
     assert (
