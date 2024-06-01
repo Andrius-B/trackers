@@ -10,6 +10,5 @@ class TCPDispatcher(TDispatcher):
     def __call__(self, event: Event):
         self._socket.sendall(f"{event.json()}\n".encode())
 
-    def __exit__(self, **kwargs):
-        self._socket.sendall(f"__POISON__".encode())
+    def __exit__(self, **_):
         self._socket.close()

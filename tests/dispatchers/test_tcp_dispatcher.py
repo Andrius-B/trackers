@@ -1,81 +1,75 @@
 from json import loads
 import time
-from threading import Thread
-from tests.test_fixtures import temp_file_closed
+from threading import Thread, Event
+from contextlib import contextmanager
+from trackers.receivers.tcp_receiver import TCPMetricsSocketHandler
 from trackers.dispatchers.tcp_dispatcher import TCPDispatcher
 from trackers.dispatcher import configure_dispatcher
-from trackers.trackers import track
+from trackers.trackers import tracked
 import socketserver
 from multiprocessing import Process
 
-class TCPMetricsHandler(socketserver.BaseRequestHandler):
+class TCPMetricsTestHandler(TCPMetricsSocketHandler):
 
-    samples = []
-
-    def handle_one_sample(self, sample_bytes: bytes):
-        try:
-            TCPMetricsHandler.samples.append(loads(sample_bytes.decode()))
-        except Exception as e:
-            raise e
-    def read_request_lines(self):
-        buffer = b''
-        while len(data := self.request.recv(1024)) > 0:
-            buffer += data
-            while b'\n' in buffer:
-                first_newline = buffer.find(b'\n')
-                sample, buffer = buffer[:first_newline], buffer[first_newline+1:]
-                yield sample
-            print(f"Received sent {len(TCPMetricsHandler.samples)} events")
-
-    def handle(self):
-        for sample_bytes in self.read_request_lines():
-            self.handle_one_sample(sample_bytes)
+    def handle_event(self, event: Event):
+        TCPMetricsTestHandler.events.append(event)
         
 
-PORT = 12153
+def _run_test_tcp_server(port: int, host: str):
+    with socketserver.TCPServer((host, port), TCPMetricsTestHandler) as server:
+        server.timeout = 0.05
+        while not TCPMetricsTestHandler.termination_event.is_set():
+            server.handle_request()
 
-def run_tcp_server():
-    with socketserver.TCPServer(("localhost", PORT), TCPMetricsHandler) as server:
-        server.handle_request()
+TEST_PORT = 12154
+
+@contextmanager
+def tcp_test_receiver_thread(port: int = TEST_PORT, host: str = "localhost"):
+    TCPMetricsTestHandler.events = []
+    TCPMetricsTestHandler.termination_event.clear()
+    server_thread = Thread(target = _run_test_tcp_server, args = (port, host), name = "tcp-metric-listener", daemon=True)
+    server_thread.start()
+    TCPMetricsTestHandler.started = True
+    yield server_thread
+    TCPMetricsTestHandler.termination_event.set()
+    server_thread.join(timeout=0.1)
+    TCPMetricsTestHandler.started = False
+    assert not server_thread.is_alive(), "TCPMetricsHandler server did not terminate in time."
 
 def test_tcp_dispatcher_metrics_from_main_thread():
-    server_thread = Thread(target = run_tcp_server, name = "tcp-metric-listener", daemon=True)
-    server_thread.start()
-    TCPMetricsHandler.samples = []
-    with configure_dispatcher(TCPDispatcher(PORT)):
-        for i in range(100):
-            with track(f"{i}", "c"):
-                pass
-        for i in range(100):
-            with track(f"2-{i}", "c"):
-                pass
-    server_thread.join(timeout=0.1)
-    assert len(TCPMetricsHandler.samples) == 400
+    with tcp_test_receiver_thread():
+        with configure_dispatcher(TCPDispatcher(TEST_PORT)):
+            for i in range(100):
+                with tracked(f"{i}", "c"):
+                    pass
+            for i in range(100):
+                with tracked(f"2-{i}", "c"):
+                    pass
+    # two ranges sending 100 start and end events = 400 events
+    assert len(TCPMetricsTestHandler.events) == 400
 
 
 def send_from_process1():
-    with configure_dispatcher(TCPDispatcher(PORT)):
+    with configure_dispatcher(TCPDispatcher(TEST_PORT)):
         for i in range(50):
-            with track(f"first-{i}", "c"):
+            with tracked(f"first-{i}", "c"):
                 pass
 def send_from_process2():
-    with configure_dispatcher(TCPDispatcher(PORT)):
+    with configure_dispatcher(TCPDispatcher(TEST_PORT)):
         for i in range(50):
-            with track(f"second-{i}", "c"):
+            with tracked(f"second-{i}", "c"):
                 pass
 
 def test_tcp_dispatcher_metrics_from_process():
-    server_thread = Thread(target = run_tcp_server, name = "tcp-metric-listener", daemon=True)
-    server_thread.start()
-    procs = [Process(target=f) for f in [send_from_process1, send_from_process2]]
-    TCPMetricsHandler.samples = []
-    for p in procs:
-        p.start()
-    for p in procs:
-        p.join()
-    # 2 processes sending start and end events 50 times means 200 events in total
-    assert len(TCPMetricsHandler.samples) == 200
-    server_thread.join(timeout=0.1)
+    with tcp_test_receiver_thread(port = TEST_PORT):
+        procs = [Process(target=f) for f in [send_from_process1, send_from_process2]]
+        TCPMetricsTestHandler.events = []
+        for p in procs:
+            p.start()
+        for p in procs:
+            p.join()
+    # two processes sending 50 start and end events = 200 events
+    assert len(TCPMetricsTestHandler.events) == 200
 
 
  

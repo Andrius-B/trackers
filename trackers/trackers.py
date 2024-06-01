@@ -8,7 +8,7 @@ import trackers.dispatcher as d
 
 
 @contextmanager
-def track(name: str, cat: str, args: Optional[Mapping] = None):
+def tracked(name: str, cat: str, args: Optional[Mapping] = None):
     common_args = {
         "name": name,
         "cat": cat,
